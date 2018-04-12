@@ -1,0 +1,55 @@
+module newadservant
+{
+    struct AdPosition{
+
+        /**
+        *  1行的头部注释
+        */
+        0 require int id = 0; // 变量末尾注释末尾注释
+
+        // 2行的头部注释
+        1 require string name = ""; // test
+
+        2 require int type = 0;
+
+        3 require int status = 0;
+
+        4 require int platform = 0;
+
+        5 require string extInfo = "";
+
+        6 require int userId = 0;
+
+        7 require int updateUid = 0;
+
+        8 require string createTime = "";
+
+        9 require string updateTime = "";
+
+        10 require int imageWidth = 0;
+
+        11 require int imageHeight = 0;
+
+        12 require int lowLimit = 0;
+
+        13 require int imageSize = 0;
+
+        14 require int changeModel = 0;
+
+        15 require int sex = 0;
+
+        16 require int form = 0;
+
+        17 require int category = 0;
+
+        18 require int tag = 0;
+
+        19 optional string intro = "";
+
+        20 optional int words = 0;
+
+        21 optional int checkImage = 0;//0检查 1不检查
+
+        22 optional int version = 0; //0 不需要审核 1 广告需要审核
+    };
+}
