@@ -19,6 +19,7 @@ package com.qq.book.generator.gensrc;
 import com.qq.book.generator.SystemStreamLog;
 import com.qq.book.generator.parse.TarsLexer;
 import com.qq.book.generator.parse.TarsParser;
+import com.qq.book.generator.parse.ast.TarsAnnotation;
 import com.qq.book.generator.parse.ast.TarsConst;
 import com.qq.book.generator.parse.ast.TarsCustomType;
 import com.qq.book.generator.parse.ast.TarsEnum;
@@ -52,6 +53,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.qq.book.generator.parse.TarsLexer.COMMENT;
+
 
 public class Tars2JavaMojo{
 
@@ -70,19 +73,12 @@ public class Tars2JavaMojo{
 
         String fileName = "test.tars";
         ClassLoader classLoader = Tars2JavaMojo.class.getClassLoader();
-        /**
-         getResource()方法会去classpath下找这个文件，获取到url resource, 得到这个资源后，调用url.getFile获取到 文件 的绝对路径
-         */
         URL url = classLoader.getResource(fileName);
 
         System.out.println(url.getFile());
 
         TarsLexer tarsLexer = new TarsLexer(new ANTLRFileStream(url.getFile(), "UTF-8"));
         CommonTokenStream tokens = new CommonTokenStream(tarsLexer);
-
-
-
-
         TarsParser tarsParser = new TarsParser(tokens);
         TarsRoot root = (TarsRoot) tarsParser.start().getTree();
         root.setTokenStream(tokens);
@@ -96,6 +92,8 @@ public class Tars2JavaMojo{
             list.add(ns);
         }
 
+        setAnnotation(tokens, root);
+
         Tars2JavaMojo j = new Tars2JavaMojo();
         // 3. generate java files.
         for (Entry<String, List<TarsNamespace>> entry : nsMap.entrySet()) {
@@ -106,6 +104,33 @@ public class Tars2JavaMojo{
             }
         }
 
+    }
+
+    private static void setAnnotation(CommonTokenStream tokens, TarsRoot root) {
+        for (TarsNamespace ns : root.namespaceList()) {
+            for (TarsStruct struct : ns.structList()) {
+                for (TarsStructMember member : struct.getMemberList()) {
+
+                    int headIndex = member.getTokenStartIndex() - 1;
+                    if (headIndex >= 0) {
+                        Token token = tokens.get(headIndex);
+                        if (token.getType() == COMMENT && TarsAnnotation.isHeadAnnotation(token.getText())) {
+                            member.setHeadAnnotation(new TarsAnnotation.HeadAnnotation(token.getText()));
+                        }
+                    }
+
+                    // +2 需要略过一个;号
+                    int tailIndex = member.getTokenStopIndex() + 2;
+                    if (tailIndex < tokens.size()) {
+                        Token token = tokens.get(tailIndex);
+                        if (token.getType() == COMMENT && TarsAnnotation.isTailAnnotation(token.getText())) {
+                            member.setTailAnnotation(new TarsAnnotation.TailAnnotation(token.getText()));
+                        }
+                    }
+
+                }
+            }
+        }
     }
 
 
@@ -191,7 +216,7 @@ public class Tars2JavaMojo{
         // generate Struct
         for (TarsNamespace ns : namespaces) {
             for (TarsStruct s : ns.structList()) {
-                genStruct(dirPath, packageName, ns.namespace(), s, ns.keyMap().get(s.structName()), nsMap);
+                genStruct(dirPath, packageName, ns.namespace(), s, ns.keyMap().get(s.getStructName()), nsMap);
             }
         }
 
@@ -293,7 +318,7 @@ public class Tars2JavaMojo{
 
     private void genStruct(String dirPath, String packageName, String namespace, TarsStruct struct, TarsKey key,
                            Map<String, List<TarsNamespace>> nsMap) throws Exception {
-        String structClass = struct.structName();
+        String structClass = struct.getStructName();
         PrintWriter out = new PrintWriter(dirPath + structClass + ".java", tars2JavaConfig.charset);
         printHead(out);
         out.println("package " + packageName + ";");
@@ -307,47 +332,47 @@ public class Tars2JavaMojo{
         printDoc(out, getDoc(struct, ""));
         out.println("@TarsStruct");
         if (key == null) {
-            out.println("public class " + struct.structName() + " {");
+            out.println("public class " + struct.getStructName() + " {");
         } else {
-            out.println("public class " + struct.structName() + " implements Comparable<" + struct.structName() + "> {");
+            out.println("public class " + struct.getStructName() + " implements Comparable<" + struct.getStructName() + "> {");
         }
         out.println();
 
         // 定义成员变量
-        for (TarsStructMember m : struct.memberList()) {
+        for (TarsStructMember m : struct.getMemberList()) {
             out.println("\t@TarsStructProperty(order = " + m.tag() + ", isRequire = " + m.isRequire() + ")");
-            out.println("\tpublic " + type(m.memberType(), nsMap) + " " + m.memberName() + " = " + (m.defaultValue() == null ? typeInit(m.memberType(), nsMap, false) : m.defaultValue()) + ";");
+            out.println("\tpublic " + type(m.memberType(), nsMap) + " " + m.getMemberName() + " = " + (m.getDefaultValue() == null ? typeInit(m.memberType(), nsMap, false) : m.getDefaultValue()) + ";");
         }
         out.println();
 
         // 生成 getter setter
-        for (TarsStructMember m : struct.memberList()) {
-            out.println("\tpublic " + type(m.memberType(), nsMap) + " " + fieldGetter(m.memberName(), m.memberType()) + "() {");
-            out.println("\t\treturn " + m.memberName() + ";");
+        for (TarsStructMember m : struct.getMemberList()) {
+            out.println("\tpublic " + type(m.memberType(), nsMap) + " " + fieldGetter(m.getMemberName(), m.memberType()) + "() {");
+            out.println("\t\treturn " + m.getMemberName() + ";");
             out.println("\t}");
             out.println();
 
-            out.println("\tpublic void " + fieldSetter(m.memberName(), m.memberType()) + "(" + type(m.memberType(), nsMap) + " " + m.memberName() + ") {");
-            out.println("\t\tthis." + m.memberName() + " = " + m.memberName() + ";");
+            out.println("\tpublic void " + fieldSetter(m.getMemberName(), m.memberType()) + "(" + type(m.memberType(), nsMap) + " " + m.getMemberName() + ") {");
+            out.println("\t\tthis." + m.getMemberName() + " = " + m.getMemberName() + ";");
             out.println("\t}");
             out.println();
         }
 
         // 生成 constructor
-        out.println("\tpublic " + struct.structName() + "() {");
+        out.println("\tpublic " + struct.getStructName() + "() {");
         out.println("\t}");
         out.println();
-        out.print("\tpublic " + struct.structName() + "(");
-        for (int i = 0; i < struct.memberList().size(); ++i) {
-            TarsStructMember m = struct.memberList().get(i);
-            out.print(type(m.memberType(), nsMap) + " " + m.memberName());
-            if (i < struct.memberList().size() - 1) {
+        out.print("\tpublic " + struct.getStructName() + "(");
+        for (int i = 0; i < struct.getMemberList().size(); ++i) {
+            TarsStructMember m = struct.getMemberList().get(i);
+            out.print(type(m.memberType(), nsMap) + " " + m.getMemberName());
+            if (i < struct.getMemberList().size() - 1) {
                 out.print(", ");
             }
         }
         out.println(") {");
-        for (TarsStructMember m : struct.memberList()) {
-            out.println("\t\tthis." + m.memberName() + " = " + m.memberName() + ";");
+        for (TarsStructMember m : struct.getMemberList()) {
+            out.println("\t\tthis." + m.getMemberName() + " = " + m.getMemberName() + ";");
         }
         out.println("\t}");
         out.println();
@@ -355,7 +380,7 @@ public class Tars2JavaMojo{
         // compareTo()
         if (key != null) {
             out.println("\t@Override");
-            out.println("\tpublic int compareTo(" + struct.structName() + " o) {");
+            out.println("\tpublic int compareTo(" + struct.getStructName() + " o) {");
             out.println("\t\tint c = 0;");
             for (String k : key.keyList()) {
                 out.println("\t\tif((c = TarsUtil.compareTo(" + k + ", o." + k + ")) != 0 ) {");
@@ -386,8 +411,8 @@ public class Tars2JavaMojo{
             out.println("\tpublic int hashCode() {");
             out.println("\t\tfinal int prime = 31;");
             out.println("\t\tint result = 1;");
-            for (TarsStructMember m : struct.memberList()) {
-                out.println("\t\tresult = prime * result + TarsUtil.hashCode(" + m.memberName() + ");");
+            for (TarsStructMember m : struct.getMemberList()) {
+                out.println("\t\tresult = prime * result + TarsUtil.hashCode(" + m.getMemberName() + ");");
             }
             out.println("\t\treturn result;");
             out.println("\t}");
@@ -404,10 +429,10 @@ public class Tars2JavaMojo{
         out.println("\t\tif (obj == null) {");
         out.println("\t\t\treturn false;");
         out.println("\t\t}");
-        out.println("\t\tif (!(obj instanceof " + struct.structName() + ")) {");
+        out.println("\t\tif (!(obj instanceof " + struct.getStructName() + ")) {");
         out.println("\t\t\treturn false;");
         out.println("\t\t}");
-        out.println("\t\t" + struct.structName() + " other = (" + struct.structName() + ") obj;");
+        out.println("\t\t" + struct.getStructName() + " other = (" + struct.getStructName() + ") obj;");
         out.println("\t\treturn (");
 
         if (key != null) {
@@ -416,9 +441,9 @@ public class Tars2JavaMojo{
                 out.println("\t\t\tTarsUtil.equals(" + k + ", other." + k + ") " + (i < key.keyList().size() - 1 ? "&&" : ""));
             }
         } else {
-            for (int i = 0; i < struct.memberList().size(); ++i) {
-                String k = struct.memberList().get(i).memberName();
-                out.println("\t\t\tTarsUtil.equals(" + k + ", other." + k + ") " + (i < struct.memberList().size() - 1 ? "&&" : ""));
+            for (int i = 0; i < struct.getMemberList().size(); ++i) {
+                String k = struct.getMemberList().get(i).getMemberName();
+                out.println("\t\t\tTarsUtil.equals(" + k + ", other." + k + ") " + (i < struct.getMemberList().size() - 1 ? "&&" : ""));
             }
         }
         out.println("\t\t);");
@@ -427,34 +452,34 @@ public class Tars2JavaMojo{
 
         //writeTo
         out.println("\tpublic void writeTo(TarsOutputStream _os) {");
-        for (TarsStructMember m : struct.memberList()) {
+        for (TarsStructMember m : struct.getMemberList()) {
             if (!m.isRequire()) {
                 if (m.memberType().isPrimitive() || isEnum(m.memberType(), nsMap)) {
                     TarsPrimitiveType primitiveType = m.memberType().asPrimitive();
                     if (primitiveType != null && primitiveType.primitiveType().equals(PrimitiveType.STRING)) {
-                        out.println("\t\tif (null != " + m.memberName() + ") {");
-                        out.println("\t\t\t_os.write(" + m.memberName() + ", " + m.tag() + ");");
+                        out.println("\t\tif (null != " + m.getMemberName() + ") {");
+                        out.println("\t\t\t_os.write(" + m.getMemberName() + ", " + m.tag() + ");");
                         out.println("\t\t}");
                     } else {
-                        out.println("\t\t_os.write(" + m.memberName() + ", " + m.tag() + ");");
+                        out.println("\t\t_os.write(" + m.getMemberName() + ", " + m.tag() + ");");
                     }
                 } else {
-                    out.println("\t\tif (null != " + m.memberName() + ") {");
-                    out.println("\t\t\t_os.write(" + m.memberName() + ", " + m.tag() + ");");
+                    out.println("\t\tif (null != " + m.getMemberName() + ") {");
+                    out.println("\t\t\t_os.write(" + m.getMemberName() + ", " + m.tag() + ");");
                     out.println("\t\t}");
                 }
             } else {
-                out.println("\t\t_os.write(" + m.memberName() + ", " + m.tag() + ");");
+                out.println("\t\t_os.write(" + m.getMemberName() + ", " + m.tag() + ");");
             }
         }
         out.println("\t}");
         out.println();
 
         //cache var
-        for (TarsStructMember m : struct.memberList()) {
+        for (TarsStructMember m : struct.getMemberList()) {
             boolean isenum = isEnum(m.memberType(), nsMap);
             if ((!isenum && m.memberType().isCustom()) || m.memberType().isMap() || (m.memberType().isVector())) {
-                String memberName = "cache_" + m.memberName();
+                String memberName = "cache_" + m.getMemberName();
                 out.println("\tstatic " + type(m.memberType(), true, nsMap) + " " + memberName + ";");
                 out.println("\tstatic { ");
                 genCacheVar(memberName, true, m.memberType(), nsMap, out);
@@ -465,22 +490,22 @@ public class Tars2JavaMojo{
 
         //readFrom
         out.println("\tpublic void readFrom(TarsInputStream _is) {");
-        for (TarsStructMember m : struct.memberList()) {
+        for (TarsStructMember m : struct.getMemberList()) {
             String type = null;
             boolean isenum = isEnum(m.memberType(), nsMap);
             if ((!isenum && m.memberType().isCustom()) || m.memberType().isMap() || (m.memberType().isVector())) {
                 type = type(m.memberType(), nsMap);
-                out.println("\t\tthis." + m.memberName() + " = " + (type == null ? "" : "(" + type + ") ") + "_is.read(cache_" + m.memberName() + ", " + m.tag() + ", " + m.isRequire() + ");");
+                out.println("\t\tthis." + m.getMemberName() + " = " + (type == null ? "" : "(" + type + ") ") + "_is.read(cache_" + m.getMemberName() + ", " + m.tag() + ", " + m.isRequire() + ");");
             } else {
                 if (m.memberType().isPrimitive()) {
                     TarsPrimitiveType primitiveType = m.memberType().asPrimitive();
                     if (primitiveType.primitiveType().equals(PrimitiveType.STRING)) {
-                        out.println("\t\tthis." + m.memberName() + " = " + "_is.readString(" + m.tag() + ", " + m.isRequire() + ");");
+                        out.println("\t\tthis." + m.getMemberName() + " = " + "_is.readString(" + m.tag() + ", " + m.isRequire() + ");");
                     } else {
-                        out.println("\t\tthis." + m.memberName() + " = " + (type == null ? "" : "(" + type + ") ") + "_is.read(" + m.memberName() + ", " + m.tag() + ", " + m.isRequire() + ");");
+                        out.println("\t\tthis." + m.getMemberName() + " = " + (type == null ? "" : "(" + type + ") ") + "_is.read(" + m.getMemberName() + ", " + m.tag() + ", " + m.isRequire() + ");");
                     }
                 } else {
-                    out.println("\t\tthis." + m.memberName() + " = " + (type == null ? "" : "(" + type + ") ") + "_is.read(" + m.memberName() + ", " + m.tag() + ", " + m.isRequire() + ");");
+                    out.println("\t\tthis." + m.getMemberName() + " = " + (type == null ? "" : "(" + type + ") ") + "_is.read(" + m.getMemberName() + ", " + m.tag() + ", " + m.isRequire() + ");");
                 }
             }
         }

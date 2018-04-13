@@ -24,11 +24,12 @@ import static com.qq.book.generator.parse.TarsLexer.TARS_OPTIONAL;
 import static com.qq.book.generator.parse.TarsLexer.TARS_REQUIRE;
 
 public class TarsStructMember extends CommonTree {
-
     private final int tag;
     private final boolean isRequire;
     private final String memberName;
     private final String defaultValue;
+    private TarsAnnotation.HeadAnnotation headAnnotation;
+    private TarsAnnotation.TailAnnotation tailAnnotation;
 
     private TarsType memberType;
 
@@ -55,6 +56,13 @@ public class TarsStructMember extends CommonTree {
         }
     }
 
+    public String getJavaType() {
+        if (!memberType.isPrimitive()) {
+            throw new UnsupportedOperationException("");
+        }
+        return ((TarsPrimitiveType) memberType).primitiveType().getJavaStr();
+    }
+
     public int tag() {
         return tag;
     }
@@ -67,12 +75,27 @@ public class TarsStructMember extends CommonTree {
         return memberType;
     }
 
-    public String memberName() {
+    public String getMemberName() {
         return memberName;
     }
 
-    public String defaultValue() {
+    public String getDefaultValue() {
         return defaultValue;
     }
 
+    public TarsAnnotation.HeadAnnotation getHeadAnnotation() {
+        return headAnnotation;
+    }
+
+    public void setHeadAnnotation(TarsAnnotation.HeadAnnotation headAnnotation) {
+        this.headAnnotation = headAnnotation;
+    }
+
+    public TarsAnnotation.TailAnnotation getTailAnnotation() {
+        return tailAnnotation;
+    }
+
+    public void setTailAnnotation(TarsAnnotation.TailAnnotation tailAnnotation) {
+        this.tailAnnotation = tailAnnotation;
+    }
 }

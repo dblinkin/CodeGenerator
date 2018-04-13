@@ -40,11 +40,11 @@ public class TarsStruct extends CommonTree {
 		}
 	}
 
-	public String structName() {
+	public String getStructName() {
 		return structName;
 	}
 
-	public List<TarsStructMember> memberList() {
+	public List<TarsStructMember> getMemberList() {
 		return memberList;
 	}
 }

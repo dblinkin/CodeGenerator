@@ -1375,7 +1375,7 @@ public class TarsLexer extends Lexer {
 	public final void mCOMMENT() throws RecognitionException {
 		try {
 			int _type = COMMENT;
-			int _channel = DEFAULT_TOKEN_CHANNEL;
+			int _channel = HIDDEN; // 需要注释帮助生成代码 原有 DEFAULT_TOKEN_CHANNEL;
 
 					boolean isDoc = false;
 				

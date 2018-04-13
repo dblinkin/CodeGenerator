@@ -2,12 +2,10 @@ module newadservant
 {
     struct AdPosition{
 
-        /**
-        *  1行的头部注释
-        */
-        0 require int id = 0; // 变量末尾注释末尾注释
+        /* id的头部注释 */
+        0 require int id = 0; // id末尾注释
 
-        // 2行的头部注释
+        /* name的头部注释 */
         1 require string name = ""; // test
 
         2 require int type = 0;

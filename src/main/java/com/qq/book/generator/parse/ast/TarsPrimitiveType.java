@@ -31,7 +31,39 @@ import static com.qq.book.generator.parse.TarsLexer.TARS_VOID;
 public class TarsPrimitiveType extends TarsType {
 
     public static enum PrimitiveType {
-        VOID, BOOL, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, STRING
+        VOID(0, "void"),
+        BOOL(1, "boolean"),
+        BYTE(2, "byte"),
+        SHORT(3, "short"),
+        INT(4, "int"),
+        LONG(5, "long"),
+        FLOAT(6, "float"),
+        DOUBLE(7, "double"),
+        STRING(8, "String");
+
+        private int id;
+        private String javaStr;
+
+        PrimitiveType(int id, String javaStr) {
+            this.id = id;
+            this.javaStr = javaStr;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public String getJavaStr() {
+            return javaStr;
+        }
+
+        public void setJavaStr(String javaStr) {
+            this.javaStr = javaStr;
+        }
     }
 
     private final PrimitiveType primitiveType;
