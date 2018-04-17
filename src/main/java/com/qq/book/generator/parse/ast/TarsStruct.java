@@ -15,6 +15,7 @@
  */
 package com.qq.book.generator.parse.ast;
 
+import com.qq.book.generator.gensrc.NameFormatter;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
@@ -42,6 +43,14 @@ public class TarsStruct extends CommonTree {
 
 	public String getStructName() {
 		return structName;
+	}
+
+	public String getJavaName() {
+		return NameFormatter.toJava(structName);
+	}
+
+	public String getDbName() {
+		return NameFormatter.toDB(structName);
 	}
 
 	public List<TarsStructMember> getMemberList() {

@@ -6,7 +6,7 @@ public class TarsAnnotation {
 
     private static Pattern headPattern = Pattern.compile("/\\*.+\\*/", Pattern.DOTALL);
 
-    private static Pattern tailPattern = Pattern.compile("//.+?\n");
+    private static Pattern tailPattern = Pattern.compile("//.+?\\n", Pattern.DOTALL);
 
     private String desc;
 
@@ -43,14 +43,25 @@ public class TarsAnnotation {
     public static class HeadAnnotation extends TarsAnnotation {
 
         public HeadAnnotation(String desc) {
-            super(desc);
+            super(TarsAnnotation.filterHead(desc));
         }
     }
 
     public static class TailAnnotation extends TarsAnnotation {
 
         public TailAnnotation(String desc) {
-            super(desc);
+            super(TarsAnnotation.filterTail(desc));
         }
+    }
+
+    private static String filterHead(String annotation) {
+        return annotation.trim()
+                .replaceAll("\\s*/\\*\\s*", "")
+                .replaceAll("\\s+\\*\\s+", "")
+                .replaceAll("\\s*\\*/\\s*", "");
+    }
+
+    private static String filterTail(String annotation) {
+        return annotation.trim().replaceAll("//\\s*", "");
     }
 }

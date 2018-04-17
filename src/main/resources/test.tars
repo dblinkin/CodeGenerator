@@ -2,16 +2,24 @@ module newadservant
 {
     struct AdPosition{
 
-        /* id的头部注释 */
-        0 require int id = 0; // id末尾注释
+        /* 广告位ID */
+        0 require int id = 0; // query
 
-        /* name的头部注释 */
+        /* 广告位名称 */
         1 require string name = ""; // test
 
+        /**
+         * @name 广告类型
+         * @values 0-IOS 1-Android 2-华为
+         */
         2 require int type = 0;
 
         3 require int status = 0;
 
+        /**
+         * @name 平台
+         * @enum com.qq.book.enum.platform
+         */
         4 require int platform = 0;
 
         5 require string extInfo = "";

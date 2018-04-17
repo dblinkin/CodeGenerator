@@ -21,6 +21,10 @@ public class Velocity {
         return ve.getTemplate("template/javabean.vm", CHARSET);
     }
 
+    public Template getTemplate(String name) {
+        return ve.getTemplate(String.format("template/%s.vm", name), CHARSET);
+    }
+
     private void init() {
         ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
         ve.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());

@@ -1,6 +1,7 @@
 package com.qq.book.generator;
 
-import com.qq.book.generator.gensrc.BeanGenenerator;
+import com.qq.book.generator.gensrc.Generator;
+import com.qq.book.generator.gensrc.GeneratorFactory;
 import com.qq.book.generator.gensrc.Tars2JavaMojo;
 import com.qq.book.generator.parse.TarsLexer;
 import com.qq.book.generator.parse.TarsParser;
@@ -13,7 +14,6 @@ import org.antlr.runtime.ANTLRFileStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,6 +25,7 @@ import static com.qq.book.generator.parse.TarsLexer.COMMENT;
 public class CodeGenerator {
 
     public static void main(String[] args) throws Exception{
+        System.out.println(args);
         String fileName = "test.tars";
         ClassLoader classLoader = Tars2JavaMojo.class.getClassLoader();
         URL url = classLoader.getResource(fileName);
@@ -50,12 +51,9 @@ public class CodeGenerator {
 
         for (TarsNamespace ns : root.namespaceList()) {
             for (TarsStruct struct : ns.structList()) {
-
-                BeanGenenerator gen = new BeanGenenerator(struct);
-                gen.setPackageName("com.qq.book.");
-                gen.setOutFilePath(new File(".").getAbsolutePath() +"/" + struct.getStructName() + ".java");
-
-                gen.gen();
+                for (Generator generator : GeneratorFactory.getGenerators(struct)) {
+                    generator.gen();
+                }
             }
         }
         System.out.println("end");
