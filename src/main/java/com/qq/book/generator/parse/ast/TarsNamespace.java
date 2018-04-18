@@ -42,6 +42,14 @@ public class TarsNamespace extends CommonTree {
 		return namespace;
 	}
 
+	public String name() {
+		int index = namespace.indexOf("Servant");
+		if (index > 0) {
+			return namespace.substring(0, index);
+		}
+		return namespace;
+	}
+
 	@Override
 	public void addChild(Tree child) {
 		super.addChild(child);

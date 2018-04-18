@@ -23,15 +23,15 @@ import org.antlr.runtime.tree.Tree;
 import static com.qq.book.generator.parse.TarsLexer.TARS_OPTIONAL;
 import static com.qq.book.generator.parse.TarsLexer.TARS_REQUIRE;
 
-public class TarsStructMember extends CommonTree {
+public class TarsStructMember extends CommonTree implements Annotation{
     private final int tag;
     private final boolean isRequire;
     private final String memberName;
     private final String defaultValue;
-    private TarsAnnotation.HeadAnnotation headAnnotation;
-    private TarsAnnotation.TailAnnotation tailAnnotation;
-
     private TarsType memberType;
+
+    private String headAnnotation;
+    private String tailAnnotation;
 
     public TarsStructMember(int tokenType, String tag, Token isRequire, String memberName, String defaultValue) {
         super(new CommonToken(tokenType));
@@ -83,19 +83,23 @@ public class TarsStructMember extends CommonTree {
         return defaultValue;
     }
 
-    public TarsAnnotation.HeadAnnotation getHeadAnnotation() {
+    @Override
+    public String getHeadAnnotation() {
         return headAnnotation;
     }
 
-    public void setHeadAnnotation(TarsAnnotation.HeadAnnotation headAnnotation) {
+    @Override
+    public void setHeadAnnotation(String headAnnotation) {
         this.headAnnotation = headAnnotation;
     }
 
-    public TarsAnnotation.TailAnnotation getTailAnnotation() {
+    @Override
+    public String getTailAnnotation() {
         return tailAnnotation;
     }
 
-    public void setTailAnnotation(TarsAnnotation.TailAnnotation tailAnnotation) {
+    @Override
+    public void setTailAnnotation(String tailAnnotation) {
         this.tailAnnotation = tailAnnotation;
     }
 }

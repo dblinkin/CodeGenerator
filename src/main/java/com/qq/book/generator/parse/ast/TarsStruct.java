@@ -23,10 +23,13 @@ import org.antlr.runtime.tree.Tree;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TarsStruct extends CommonTree {
+public class TarsStruct extends CommonTree implements Annotation{
 
 	private final String structName;
 	private final List<TarsStructMember> memberList = new ArrayList<TarsStructMember>();
+
+	private String headAnnotation;
+	private String tailAnnotation;
 
 	public TarsStruct(int tokenType, String structName) {
 		super(new CommonToken(tokenType));
@@ -55,5 +58,25 @@ public class TarsStruct extends CommonTree {
 
 	public List<TarsStructMember> getMemberList() {
 		return memberList;
+	}
+
+	@Override
+	public String getHeadAnnotation() {
+		return headAnnotation;
+	}
+
+	@Override
+	public void setHeadAnnotation(String headAnnotation) {
+		this.headAnnotation = headAnnotation;
+	}
+
+	@Override
+	public String getTailAnnotation() {
+		return tailAnnotation;
+	}
+
+	@Override
+	public void setTailAnnotation(String tailAnnotation) {
+		this.tailAnnotation = tailAnnotation;
 	}
 }

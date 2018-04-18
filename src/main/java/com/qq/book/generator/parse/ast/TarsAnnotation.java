@@ -8,18 +8,14 @@ public class TarsAnnotation {
 
     private static Pattern tailPattern = Pattern.compile("//.+?\\n", Pattern.DOTALL);
 
-    private String desc;
+    protected String source;
 
-    public TarsAnnotation(String desc) {
-        this.desc = desc;
+    public TarsAnnotation(String source) {
+        this.source = source.trim();
     }
 
-    public String getDesc() {
-        return desc;
-    }
-
-    public void setDesc(String desc) {
-        this.desc = desc;
+    public String getSource() {
+        return source;
     }
 
     /**
@@ -38,30 +34,5 @@ public class TarsAnnotation {
      */
     public static boolean isTailAnnotation(String desc) {
         return tailPattern.matcher(desc).find();
-    }
-
-    public static class HeadAnnotation extends TarsAnnotation {
-
-        public HeadAnnotation(String desc) {
-            super(TarsAnnotation.filterHead(desc));
-        }
-    }
-
-    public static class TailAnnotation extends TarsAnnotation {
-
-        public TailAnnotation(String desc) {
-            super(TarsAnnotation.filterTail(desc));
-        }
-    }
-
-    private static String filterHead(String annotation) {
-        return annotation.trim()
-                .replaceAll("\\s*/\\*\\s*", "")
-                .replaceAll("\\s+\\*\\s+", "")
-                .replaceAll("\\s*\\*/\\s*", "");
-    }
-
-    private static String filterTail(String annotation) {
-        return annotation.trim().replaceAll("//\\s*", "");
     }
 }

@@ -1,18 +1,19 @@
-module newadservant
+module adServant
 {
+    /* 广告位 */
     struct AdPosition{
 
         /* 广告位ID */
-        0 require int id = 0; // query
+        0 require int id = 0; // query readonly
 
         /* 广告位名称 */
-        1 require string name = ""; // test
+        1 require string name = "";
 
         /**
          * @name 广告类型
          * @values 0-IOS 1-Android 2-华为
          */
-        2 require int type = 0;
+        2 require int type = 0; // hidden
 
         3 require int status = 0;
 

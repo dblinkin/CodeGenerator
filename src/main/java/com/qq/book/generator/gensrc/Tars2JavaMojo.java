@@ -115,7 +115,7 @@ public class Tars2JavaMojo{
                     if (headIndex >= 0) {
                         Token token = tokens.get(headIndex);
                         if (token.getType() == COMMENT && TarsAnnotation.isHeadAnnotation(token.getText())) {
-                            member.setHeadAnnotation(new TarsAnnotation.HeadAnnotation(token.getText()));
+                            member.setHeadAnnotation(token.getText());
                         }
                     }
 
@@ -124,7 +124,7 @@ public class Tars2JavaMojo{
                     if (tailIndex < tokens.size()) {
                         Token token = tokens.get(tailIndex);
                         if (token.getType() == COMMENT && TarsAnnotation.isTailAnnotation(token.getText())) {
-                            member.setTailAnnotation(new TarsAnnotation.TailAnnotation(token.getText()));
+                            member.setTailAnnotation(token.getText());
                         }
                     }
 

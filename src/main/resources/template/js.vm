@@ -1,0 +1,122 @@
+$(document).ready(function(){
+
+    // ${struct.desc}新增按钮
+    $("#add_Btn").click(function(){
+        initInputDialog();
+
+        $("#editDialog").dialog({
+            title : "新增${struct.desc}",
+            width : 700,
+            buttons : {
+                "确定":function () {
+                    if(!check()) {
+                        return false;
+                    }
+                    setExtInfo();
+                    $("#edit_adPosition").ajaxSubmit({
+                        url: basepath + "${moduleName}/add${struct.name}.action",
+                        type: "POST",
+                        dataType: "json",
+                        success: function(result) {
+                            alert(result.retMsg);
+                            if(result.retCode == "success"){
+                                refreshPage();
+                            }
+                        }
+                    });
+                },
+                "取消":function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    });
+
+    // ${struct.desc}修改按钮
+    $("[name=udate_Btn]").click(function () {
+        initInputDialog();
+        var id = $(this).attr("param");
+        $.ajax({
+            url: basepath + "${moduleName}/query${struct.name}.action",
+            type: "POST",
+            data: {"id": id},
+            dataType: "json",
+            success: function(data){
+                if ( data.retCode == "failed" ) {
+                    alert(data.retMsg);
+                return;
+                }
+
+                var ${struct.javaName} = data.data;
+                for(var key in ${struct.javaName}) {
+                    $("[name=" +key + "]").val(${struct.javaName}[key]);
+                }
+
+                $("#editDialog").dialog({
+                    title : "修改${struct.desc}",
+                    width : 700,
+                    buttons : {
+                        "确定":function () {
+                            if(!check()) {
+                                 return false;
+                            }
+                            $("#editDialog").ajaxSubmit({
+                                url: basepath + "${moduleName}/update${struct.name}.action",
+                                type: "POST",
+                                success: function(result) {
+                                    alert(result.retMsg);
+                                    if(result.retCode == "success"){
+                                        refreshPage();
+                                    }
+                                }
+                            });
+                        },
+                        "取消":function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+    // 删除${struct.desc}
+    $("[name='del_Btn']").click(function(){
+        if(!confirm("确认删除${struct.desc}？"))
+            return false;
+        var param = $(this).attr("param");
+        var url = BaseUtils.getSECUrl(basepath + "${moduleName}/delete${struct.name}.action?" + param);
+        window.location = url;
+    });
+
+    // 发布
+    $("#refresh_Btn").click(function () {
+        $.ajax({
+            url: basepath + "${moduleName}/refresh${struct.name}.action",
+            type: "POST",
+            dataType: "json",
+            success: function (data) {
+                if ( data.retCode == "failed" ) {
+                    alert(data.retMsg);
+                    return;
+                }
+                alert(data.retMsg);
+            }
+        });
+    });
+});
+
+function initInputDialog() {
+    $("#editDialog [name=id]").val("");
+    $("#editDialog :text").val("");
+    $("#editDialog :checkbox").each(function () {
+        $(this).removeAttr("checked");
+    });
+}
+
+function check() {
+    // todo 进行前端校验
+});
+
+
+

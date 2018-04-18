@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="pragma" content="no-cache"/>
+    <meta http-equiv="cache-control" content="no-cache"/>
+    <meta http-equiv="expires" content="0"/>
+    <title>index</title>
+    <link rel="stylesheet" type="text/css" href="/css/common/style.css" />
+    <link type="text/css" rel="stylesheet" href="/css/common/style_ad.css"/>
+    <link rel="stylesheet" type="text/css" href="/css/common/main.css" />
+    <link rel="stylesheet" type="text/css" href="/css/multiselect/jquery-ui.css" />
+    <link rel="stylesheet" href="/css/auth/uniform/uniform.default.css" media="screen" />
+    <style>
+        input:read-only{border: 1px solid #DDD;background: #F5F5F5;}
+    </style>
+    <script language="javascript" src="/js/common/jquery.js"></script>
+    <script language="javascript" src="/js/auth/ui/jquery-ui-1.10.3.custom.js"></script>
+    <script language="javascript" src="js/common/jquery.form.js"></script>
+    <script language="javascript" src="js/common/ctrl.js"></script>
+    <script language="javascript" src="js/common/base.js"></script>
+    <script language="javascript" src="js/common/paging.js"></script>
+    <script language="javascript" src="js/common/buttons.js"></script>
+    <script language="javascript" src="js/column/func.js"></script>
+    <script language="javascript" src="js/common/func_iframe.js"></script>
+    <script language="javascript" src="js/common/buttons.js"></script>
+    <script language="javascript" src="/js/ad/WebCalendar.js"></script>
+    <script language="javascript" src="/js/${moduleName}/${struct.dbName}_ops.js}?rand=${ViewUtils.random()}"></script>
+</head>
+
+<body style="overflow:auto">
+<div id="editDialog" style="display:none;" class="dialog">
+    \#parse("/page/${moduleName}/${struct.dbName}_input.htm")
+</div>
+
+<div>
+    <form id="queryform"  method="post" action='/${moduleName}/query${struct.name}ByPage.action'>
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" class="base_tbl">
+            <tr>
+            #foreach($member in ${struct.queryMembers})
+                #if($member.isType("text"))
+                <td width="70" height="40" align="right">${member.desc}：</td>
+                <td width="200">
+                    <input type="text" name="query${struct.name}" class="tj_ipt fl" value="\$!query${struct.name}"/>
+                </td>
+                #elseif($member.isType("select"))
+                <td width="70" height="40" align="right">${member.desc}：</td>
+                <td width="200">
+                    <select name="${member.name}" class="tj_ipt" value="\$!query${struct.name}">
+                        \#foreach($type in ${member.name}s)
+                        <option value="\${type.id}">\${type.desc}</option>
+                        \#end
+                    </select>
+                </td>
+                #end
+            #end
+            </tr>
+        </table>
+    </form>
+</div>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="list_tb">
+    <tr>
+    #foreach($member in ${struct.members})
+        <td width="50" class="toptd">${member.desc}</td>
+    #end
+        <td width="60" class="toptd">操作</td>
+    </tr>
+    \#foreach($row in $sr.list)
+    <tr class="row_sel">
+    #foreach($member in ${struct.members})
+        <td width="50" class="toptd">\$!row.${member.javaName}</td>
+    #end
+        <td class="blue">
+            <a class="blue" style="cursor: pointer;" name="update_Btn" param="${row.id}">修改</a>
+            <a class="blue" style="cursor: pointer;" name="delete_Btn" param="${row.id}">删除</a>
+        </td>
+    </tr>
+    \#end
+</table>
+<form id="hideform"  method="post" action='/${moduleName}/query${struct.name}ByPage.action'>
+    <div class="list_page">
+        <div class="list_btn">
+        #foreach($member in ${struct.queryMembers})
+            <input name="query${member.name}" type="hidden" value="\$!query${member.name}" />
+        #end
+            <input id="add_Btn" type="button" class="ctrl_btn" value="新增"/>
+            <input id="refresh_Btn" type="button" class="ctrl_btn" style="margin-left: 10px" value="发布"/>
+        </div>
+        \$!sr.pageInfo
+    </div>
+</form>
+</body>
+</html>

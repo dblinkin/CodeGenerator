@@ -5,6 +5,7 @@ import com.qq.book.generator.gensrc.GeneratorFactory;
 import com.qq.book.generator.gensrc.Tars2JavaMojo;
 import com.qq.book.generator.parse.TarsLexer;
 import com.qq.book.generator.parse.TarsParser;
+import com.qq.book.generator.parse.ast.Annotation;
 import com.qq.book.generator.parse.ast.TarsAnnotation;
 import com.qq.book.generator.parse.ast.TarsNamespace;
 import com.qq.book.generator.parse.ast.TarsRoot;
@@ -13,6 +14,7 @@ import com.qq.book.generator.parse.ast.TarsStructMember;
 import org.antlr.runtime.ANTLRFileStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
+import org.antlr.runtime.tree.CommonTree;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -51,7 +53,7 @@ public class CodeGenerator {
 
         for (TarsNamespace ns : root.namespaceList()) {
             for (TarsStruct struct : ns.structList()) {
-                for (Generator generator : GeneratorFactory.getGenerators(struct)) {
+                for (Generator generator : GeneratorFactory.getGenerators(ns, struct)) {
                     generator.gen();
                 }
             }
@@ -62,28 +64,39 @@ public class CodeGenerator {
     private static void setAnnotation(CommonTokenStream tokens, TarsRoot root) {
         for (TarsNamespace ns : root.namespaceList()) {
             for (TarsStruct struct : ns.structList()) {
+                setAnnotation(struct, tokens);
                 for (TarsStructMember member : struct.getMemberList()) {
-
-                    int headIndex = member.getTokenStartIndex() - 1;
-                    if (headIndex >= 0) {
-                        Token token = tokens.get(headIndex);
-                        if (token.getType() == COMMENT && TarsAnnotation.isHeadAnnotation(token.getText())) {
-                            member.setHeadAnnotation(new TarsAnnotation.HeadAnnotation(token.getText()));
-                        }
-                    }
-
-                    // +2 需要略过一个;号
-                    int tailIndex = member.getTokenStopIndex() + 2;
-                    if (tailIndex < tokens.size()) {
-                        Token token = tokens.get(tailIndex);
-                        if (token.getType() == COMMENT && TarsAnnotation.isTailAnnotation(token.getText())) {
-                            member.setTailAnnotation(new TarsAnnotation.TailAnnotation(token.getText()));
-                        }
-                    }
-
+                    setAnnotation(member, tokens);
                 }
             }
         }
     }
+
+    private static void setAnnotation(CommonTree node, CommonTokenStream tokens) {
+        int headIndex = node.getTokenStartIndex() - 1;
+        if (headIndex >= 0) {
+            Token token = tokens.get(headIndex);
+            if (token.getType() == COMMENT && TarsAnnotation.isHeadAnnotation(token.getText())) {
+                if (node instanceof Annotation) {
+                    ((Annotation)node).setHeadAnnotation(token.getText());
+                }
+            }
+        }
+
+        // +2 需要略过一个;号
+        int tailIndex = node.getTokenStopIndex() + 2;
+        if (tailIndex < tokens.size()) {
+            Token token = tokens.get(tailIndex);
+            if (token.getType() == COMMENT && TarsAnnotation.isTailAnnotation(token.getText())) {
+                if (node instanceof Annotation) {
+                    ((Annotation)node).setTailAnnotation(token.getText());
+                }
+            }
+        }
+    }
+
+
+
+
 
 }
