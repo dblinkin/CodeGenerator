@@ -2,45 +2,45 @@
     <div>
         <table width="100%" border="0" cellspacing="0" cellpadding="0">
             #foreach($member in $struct.members)
-                #if($member.isType("file"))
-                <tr>
-                    <th width="35%"><strong><font class="red">*</font>${member.desc}：</strong></th>
-                    <td width="65%">
-                        <input name="${member.name}File" type="file" class="tj_ipt" />
-                    </td>
-                    <inpyt name="clueUrl" type="hidden"/>
-                </tr>
-                #elseif($member.isType("time"))
-                <tr>
-                    <th width="35%"><strong>${member.desc}：</strong></th>
-                    <td width="65%">
-                        <input name="${member.name}" type="text" class="tj_ipt fl timeLeft"
-                               onclick="new Calendar().show(this);"/>
-                    </td>
-                </tr>
-                #elseif($member.isType("select"))
-                <tr>
-                    <th width="35%"><strong><font class="red">*</font>${member.desc}：</strong></th>
-                    <td width="65%">
-                        <select name="${member.name}" class="tj_ipt" >
-                            \#foreach($type in ${member.name}s)
-                            <option value="\${type.id}">\${type.desc}</option>
-                            \#end
-                        </select>
-                    </td>
-                </tr>
-                #elseif($member.isType("text"))
-                    <tr>
-                        <th width="35%"><strong>${member.desc}：</strong></th>
-                        <td width="65%">
-                            #if($member.isType("readonly"))
-                                <input name="${member.name}" type="text" readonly="readonly" />
-                            #else
-                                <input name="${member.name}" type="text" class="tj_ipt" />
-                            #end
-                        </td>
-                    </tr>
-                #end
+            #if($member.isType("file"))
+            <tr>
+                <th width="35%"><strong><font class="red">*</font>${member.desc}：</strong></th>
+                <td width="65%">
+                    <input name="${member.name}File" type="file" class="tj_ipt" />
+                </td>
+                <inpyt name="clueUrl" type="hidden"/>
+            </tr>
+            #elseif($member.isType("time"))
+            <tr>
+                <th width="35%"><strong>${member.desc}：</strong></th>
+                <td width="65%">
+                    <input name="${member.name}" type="text" class="tj_ipt fl timeLeft"
+                           onclick="new Calendar().show(this);"/>
+                </td>
+            </tr>
+            #elseif($member.isType("select"))
+            <tr>
+                <th width="35%"><strong><font class="red">*</font>${member.desc}：</strong></th>
+                <td width="65%">
+                    <select name="${member.name}" class="tj_ipt" >
+                        \#foreach($type in ${member.name}s)
+                        <option value="\${type.id}">\${type.desc}</option>
+                        \#end
+                    </select>
+                </td>
+            </tr>
+            #elseif($member.isType("text"))
+            <tr>
+                <th width="35%"><strong>${member.desc}：</strong></th>
+                <td width="65%">
+                    #if($member.isType("readonly"))
+                    <input name="${member.name}" type="text" readonly="readonly" />
+                    #else
+                    <input name="${member.name}" type="text" class="tj_ipt" />
+                    #end
+                </td>
+            </tr>
+            #end
             #end
             #foreach($member in $struct.hiddenMembers)
                 <input name="${member.name}" type="hidden" />
